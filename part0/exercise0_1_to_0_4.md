@@ -1,4 +1,4 @@
- Full Stack Open – Part 0 Exercises (0.1–0.6)
+ Full Stack Open – Part 0 Exercises (0.1–0.4)
 
  0.1: What happens when you open a web page?
 

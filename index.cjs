@@ -1,26 +1,20 @@
-const path = require('path');
-const express = require('express')
-const morgan = require('morgan')
-const cors = require('cors')
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+
+const app = express();
+
+app.use(cors());
 app.use(express.static('dist'));
+app.use(express.json());
 
-
-const app = express()
-const PORT = 3001
-
-app.use(cors())
-app.use(express.json())
-
-// Custom morgan token to log post data
-morgan.token('post-data', (req) => {
-  return req.method === 'POST' ? JSON.stringify(req.body) : ''
-})
-
+// Optional: custom morgan token to log request body for POST
+morgan.token('body', (req) => JSON.stringify(req.body));
 app.use(
-  morgan(':method :url :status :res[content-length] - :response-time ms :post-data')
-)
+  morgan(':method :url :status :res[content-length] - :response-time ms :body')
+);
 
-// Sample data
+// Simulated data (you can replace this with MongoDB or a real DB later)
 let persons = [
   {
     id: 1,
@@ -42,63 +36,69 @@ let persons = [
     name: 'Mary Poppendieck',
     number: '39-23-6423122'
   }
-]
+];
 
-// Routes
+// GET all persons
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
-})
+  res.json(persons);
+});
 
-app.get('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const person = persons.find(p => p.id === id)
-
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).send({ error: 'Not found' })
-  }
-})
-
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
-  persons = persons.filter(p => p.id !== id)
-  res.status(204).end()
-})
-
-app.post('/api/persons', (req, res) => {
-  const body = req.body
-
-  if (!body.name || !body.number) {
-    return res.status(400).json({ error: 'name or number missing' })
-  }
-
-  if (persons.find(p => p.name === body.name)) {
-    return res.status(400).json({ error: 'name must be unique' })
-  }
-
-  const newPerson = {
-    id: Math.floor(Math.random() * 10000),
-    name: body.name,
-    number: body.number
-  }
-
-  persons = persons.concat(newPerson)
-  res.status(201).json(newPerson)
-})
-
+// GET info page
 app.get('/info', (req, res) => {
   const info = `
     <p>Phonebook has info for ${persons.length} people</p>
     <p>${new Date()}</p>
-  `
-  res.send(info)
-})
+  `;
+  res.send(info);
+});
 
+// GET person by ID
+app.get('/api/persons/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const person = persons.find((p) => p.id === id);
+
+  if (person) {
+    res.json(person);
+  } else {
+    res.status(404).end();
+  }
+});
+
+// DELETE person
+app.delete('/api/persons/:id', (req, res) => {
+  const id = Number(req.params.id);
+  persons = persons.filter((p) => p.id !== id);
+  res.status(204).end();
+});
+
+// POST new person
+app.post('/api/persons', (req, res) => {
+  const body = req.body;
+
+  if (!body.name || !body.number) {
+    return res.status(400).json({
+      error: 'name or number is missing'
+    });
+  }
+
+  if (persons.find((p) => p.name === body.name)) {
+    return res.status(400).json({
+      error: 'name must be unique'
+    });
+  }
+
+  const newPerson = {
+    id: Math.floor(Math.random() * 100000),
+    name: body.name,
+    number: body.number
+  };
+
+  persons = persons.concat(newPerson);
+  res.json(newPerson);
+});
+
+// Start the server
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
-})
-
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+  console.log(`Server running on port ${PORT}`);
 });

@@ -1,6 +1,9 @@
+const path = require('path');
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+app.use(express.static('dist'));
+
 
 const app = express()
 const PORT = 3001
@@ -95,3 +98,7 @@ app.get('/info', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })
+
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
+});
